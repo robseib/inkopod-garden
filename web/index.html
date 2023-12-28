@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Inkopods Game</title>
+	<link rel="stylesheet" type="text/css" href="styles.css"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script src="script.js" defer></script>
+	<script src="https://kit.fontawesome.com/734f44dfe1.js" crossorigin="anonymous"></script>
+</head>
+
+<body class="flexcol">
+
+<header class="flex0">
+	<div class="flexbox">
+		<div id="title-box" class="flex1">
+			<h1 id="logo">Inkopods</h1>
+			<h2 id="population"></h2>
+		</div>
+		<div id="energy-box" class="flex1">
+			<div onclick="adjust_energy(epc)" id="energy"></div>
+			<h2 id="eps"></h2>
+		</div>
+	</div>
+</header>
+
+<main class="flex1">
+
+	<div id="home" class="screen">
+		<div>
+			<button type="button" onclick="adjust_energy(epc)">+1 <i class="fas fa-bolt"></i></button>
+		</div>
+	</div>
+
+	<div class="screen" id="missions">
+		<!--completely automatic-->
+	</div>
+
+	<div id="upgrades" class="screen">
+		<!--completely automatic-->
+	</div>
+
+	<div id="settings" class="screen">
+		<h1>Settings</h1>
+		<h2>Save and Load</h2>
+		<button type="button" onclick="save()"><i class="fas fa-floppy-disk"></i> Save Game</button>
+		<button type="button" onclick="delete_save()">Delete Game</button>
+		<button type="button" onclick="export_save()">Export Save</button>
+		<button type="button" onclick="import_prompt()">Import Save</button>
+		<h2>Colour Schemes</h2>
+		<div id="color-schemes">
+			<!-- automatic -->
+		</div>
+	</div>
+
+	<div id="help" class="screen">
+		<h2>Inkopods are cute little folk who thrive on Energy <i class="fas fa-bolt"></i>!</h2>
+		<p><i class="fas fa-bolt"></i> Click top right to gain more Energy.</p>
+		<p><i class='fas fa-seedling'></i> Buy and upgrade new Units.</p>
+		<p><i class="fas fa-compass"></i> Send units on Missions to discover stuff!</p>
+		<p><i class="fas fa-floppy-disk"></i> The game automatically saves to web cookies every minute.</p>
+		<h2>Update 0.3</h2>
+		<p>Added Settings panel: save, delete, import, export, colour schemes. Added colour schemes which are unlocked with Inkopod types!</p>
+		<h2>Update 0.2</h2>
+		<p>Upgrades now work properly (+10% energy production), Missions provide better rewards and a completion message, fixed so now missions can unlock new units, better display of large numbers, message on return about how much energy you earned while away, more information about unit types and missions.</p>
+	</div>
+
+</main>
+
+<footer class="flex0">
+	<div id="menu" class="flexbox">
+		<div id="menu-home" class="menu-item" onclick="switch_screen('home')"><i class="fas fa-house"></i></div>
+		<div id="menu-upgrades" class="menu-item" onclick="switch_screen('upgrades')"><i class='fas fa-bug'></i></div>
+		<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')"><i class="fas fa-compass"></i></div>
+		<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')"><i class="fas fa-gear"></i></div>
+		<div id="menu-help" class="menu-item" onclick="switch_screen('help')"><i class="fas fa-circle-question"></i></div>
+	</div>
+</footer>
+
+<div id="message">
+</div>
+
+</body>
+</html>
