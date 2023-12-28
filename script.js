@@ -2,7 +2,7 @@ let energy = 0; // base currency
 let calories = 0; // 100th of an energy, to allow for rapid display
 let idle_date = 0; // zero or the date you went into idle mode
 let save_date = new Date().getTime(); // the moment last saved, in ms since epoch
-let epc = 1; // energy per click (manual gain)
+let epc = 1; // energy per click (manual gain) // TO REMOVE
 let unlocked = 1; // the absolute number of unit types unlocked, starts at 1
 let units = []; // total units of each type
 let upgrades = []; // unit upgrades purchased
@@ -11,7 +11,7 @@ let missions = []; // array of Mission objects
 const mission_freq = 1000 * 60 * 30; // 30 min to generate a mission
 const missions_max = 6; // max number of missions
 const counter = [0,1,2,3,4,5,6,7,8]; // # of types, just makes loops easier to write
-const screens = ["upgrades", "missions", "settings", "help"]; // removed home and settings
+const screens = ["upgrades", "missions", "settings"];
 const colors = ["#00ffff", "#f500f5", "#f2f200", "#00ff00", "#0000f5", "#f20000", "#00f5ab", "#7a00f5", "#f27a00"];
 const names = ["Cyan", "Magenta", "Yellow", "Green", "Blue", "Red", "Teal", "Purple", "Orange"];
 
@@ -80,7 +80,7 @@ if (get_cookie_num("save_date") == "") {
 	load();
 }
 update_missions();
-switch_screen("help");
+switch_screen("upgrades");
 
 // TESTING
 /*
@@ -109,16 +109,14 @@ setInterval(function centosecond() {
 		} else {
 			calories += (get_eps());
 		}
+		// update the energy display only
 		document.getElementById("energy").innerHTML = "<h1><i class='fas fa-bolt fa-lg'></i> " + display_num(energy) + "</h1>";
 	}
 }, 10);
 
 setInterval(function decosecond() {
-	display();
+	display(); // update the rest of the display
 }, 100);
-
-setInterval(function second() {
-}, 1000);
 
 setInterval(function minute() {
 	update_missions();
@@ -407,7 +405,7 @@ function get_available() { // units not tied up in missions
 }
 
 function get_eps() { // energy per second
-	let eps = 0;
+	let eps = 1;
 	for (let i in counter) {eps += (get_type_eps(i));}
 	return eps;
 }
@@ -449,7 +447,6 @@ function display() { // updates all display
 	
 	// main variables (note that energy is in the timer functions)
 	document.getElementById("population").innerHTML = `<i class="fas fa-heart"></i> ` + get_available() + " / " + get_population();
-	document.getElementById("eps").innerHTML = "Per Sec: " + get_eps();
 
 	// display missions
 	let missions_screen = document.getElementById("missions");
@@ -509,19 +506,6 @@ function display() { // updates all display
 			<h1><i class="fas fa-circle-question flex0" onclick="display_desc(${i})"></i></h1>
 		`;
 		upgrades_screen.appendChild(div);
-	}
-
-	// display settings, display color schemes
-	let color_div = document.getElementById("color-schemes");
-	color_div.textContent = "";
-	color_div.classList = "flexbox";
-	for (let i = -1; i < unlocked; i++) {
-		const div = document.createElement("div");
-		div.style.borderColor = colors[i];
-		div.classList = "button flex0";
-		div.onclick = function(){color_scheme(i)};
-		if (i == -1) {div.innerHTML = "Default"} else {div.innerHTML = names[i]};
-		color_div.appendChild(div);
 	}
 
 }
@@ -611,41 +595,6 @@ function color_scheme(num) {
 			set_var("--c1", "hsl(316,80%,40%)");
 			set_var("--c2", "hsl(316,80%,40%)");
 			set_var("--cbg", "hsl(316,80%,20%)");
-			break;
-		case 2:
-			set_var("--c1", "hsl(59,80%,40%)");
-			set_var("--c2", "hsl(59,80%,40%)");
-			set_var("--cbg", "hsl(59,80%,20%)");
-			break;
-		case 3: // green
-			set_var("--c1", "hsl(134,80%,40%)");
-			set_var("--c2", "hsl(134,80%,40%)");
-			set_var("--cbg", "hsl(134,80%,20%)");
-			break;
-		case 4: // blue
-			set_var("--c1", "hsl(243,80%,40%)");
-			set_var("--c2", "hsl(243,80%,40%)");
-			set_var("--cbg", "hsl(243,80%,20%)");
-			break;	
-		case 5: // red
-			set_var("--c1", "hsl(0,80%,40%)");
-			set_var("--c2", "hsl(0,80%,40%)");
-			set_var("--cbg", "hsl(0,80%,20%)");
-			break;
-		case 6: // teal
-			set_var("--c1", "hsl(170,80%,40%)");
-			set_var("--c2", "hsl(170,80%,40%)");
-			set_var("--cbg", "hsl(170,80%,20%)");
-			break;
-		case 7: // purp
-			set_var("--c1", "hsl(280,80%,40%)");
-			set_var("--c2", "hsl(280,80%,40%)");
-			set_var("--cbg", "hsl(280,80%,20%)");
-			break;
-		case 8: // orange
-			set_var("--c1", "hsl(25,80%,40%)");
-			set_var("--c2", "hsl(25,80%,40%)");
-			set_var("--cbg", "hsl(25,80%,20%)");
 			break;
 		default:
 			set_var("--c1", "hsl(90,50%,40%)");

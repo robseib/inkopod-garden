@@ -27,42 +27,22 @@
 <main class="flex1">
 
 	<div id="home" class="screen">
-		<div>
-			<button type="button" onclick="adjust_energy(epc)">+1 <i class="fas fa-bolt"></i></button>
-		</div>
-	</div>
-
-	<div class="screen" id="missions">
-		<!--completely automatic-->
 	</div>
 
 	<div id="upgrades" class="screen">
-		<!--completely automatic-->
+		<!-- made in JS -->
+	</div>
+	
+	<div id="missions" class="screen">
+		<!-- made in JS -->
 	</div>
 
 	<div id="settings" class="screen">
 		<h1>Settings</h1>
-		<h2>Save and Load</h2>
 		<button type="button" onclick="save()"><i class="fas fa-floppy-disk"></i> Save Game</button>
-		<button type="button" onclick="delete_save()">Delete Game</button>
-		<button type="button" onclick="export_save()">Export Save</button>
-		<button type="button" onclick="import_prompt()">Import Save</button>
-		<h2>Colour Schemes</h2>
-		<div id="color-schemes">
-			<!-- automatic -->
-		</div>
-	</div>
-
-	<div id="help" class="screen">
-		<h2>Inkopods are cute little folk who thrive on Energy <i class="fas fa-bolt"></i>!</h2>
-		<p><i class="fas fa-bolt"></i> Click top right to gain more Energy.</p>
-		<p><i class='fas fa-seedling'></i> Buy and upgrade new Units.</p>
-		<p><i class="fas fa-compass"></i> Send units on Missions to discover stuff!</p>
-		<p><i class="fas fa-floppy-disk"></i> The game automatically saves to web cookies every minute.</p>
-		<h2>Update 0.3</h2>
-		<p>Added Settings panel: save, delete, import, export, colour schemes. Added colour schemes which are unlocked with Inkopod types!</p>
-		<h2>Update 0.2</h2>
-		<p>Upgrades now work properly (+10% energy production), Missions provide better rewards and a completion message, fixed so now missions can unlock new units, better display of large numbers, message on return about how much energy you earned while away, more information about unit types and missions.</p>
+		<button type="button" onclick="delete_save()"><i class="fas fa-trash"></i> Delete Game</button>
+		<button type="button" onclick="export_save()"><i class="fas fa-cloud-arrow-down"></i> Export Save</button>
+		<button type="button" onclick="import_prompt()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
 	</div>
 
 </main>
