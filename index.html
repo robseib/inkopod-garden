@@ -45,20 +45,19 @@
 		<button type="button" onclick="import_prompt()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
 	</div>
 
+	<div id="message" class="screen" onclick="close_message()">
+		<!-- made in JS, a special interrupt message screen -->
+	</div>
+
 </main>
 
 <footer class="flex0">
 	<div id="menu" class="flexbox">
-		<div id="menu-home" class="menu-item" onclick="switch_screen('home')"><i class="fas fa-house"></i></div>
 		<div id="menu-upgrades" class="menu-item" onclick="switch_screen('upgrades')"><i class='fas fa-bug'></i></div>
 		<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')"><i class="fas fa-compass"></i></div>
 		<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')"><i class="fas fa-gear"></i></div>
-		<div id="menu-help" class="menu-item" onclick="switch_screen('help')"><i class="fas fa-circle-question"></i></div>
 	</div>
 </footer>
-
-<div id="message">
-</div>
 
 </body>
 </html>
