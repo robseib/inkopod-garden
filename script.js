@@ -3,14 +3,14 @@ let calories = 0; // 100th of an energy, to allow for rapid display
 let idle_date = 0; // zero or the date you went into idle mode
 let save_date = new Date().getTime(); // the moment last saved, in ms since epoch
 let epc = 1; // energy per click (manual gain) // TO REMOVE
-let unlocked = 1; // the absolute number of unit types unlocked, starts at 1
 let units = []; // total units of each type
 let messages = []; // a queue of messages
 let missions = []; // array of Mission objects
 const mission_freq = 1000 * 60 * 30; // 30 min to generate a mission
 const missions_max = 6; // max number of missions
+const types = 9; // number of unit types
 const counter = [0,1,2,3,4,5,6,7,8]; // # of types, just makes loops easier to write
-const screens = ["upgrades", "missions", "settings"];
+const screens = ["units", "missions", "messages", "settings"];
 const colors = ["#00ffff", "#f500f5", "#f2f200", "#00ff00", "#0000f5", "#f20000", "#00f5ab", "#7a00f5", "#f27a00"];
 const names = ["C", "M", "Y", "G", "B", "R", "T", "P", "O"];
 
@@ -41,17 +41,13 @@ class Mission {
 		let actual_loss = get_random(1, this.get_loss());
 		let decrement = actual_loss;
 		while (decrement >= 1) {
-			let target = ((get_weighted_random(Math.ceil(unlocked / 3)) - 1) * 3) + get_random(0, 2);
+			let target = ((get_weighted_random(Math.ceil(types / 3)) - 1) * 3) + get_random(0, 2);
 			if (units[target] >= 1) {
 				adjust_unit(target, -1);
 				decrement--;
 			}
 		}
 		let message = "You completed a mission! <br>Reward: <i class='fas fa-bolt'></i> " + display_num(reward) + " <br>Losses: <i class='fas fa-skull'></i> " + actual_loss;
-		if (get_random(1, unlocked*2) == 1) { // roll the dice between 1 and double-unlocked, need a 1 to pass
-			message += "<br><br>You discovered a new type of Inkopod: " + names[unlocked];
-			unlocked++;
-		}
 		display_message(message);
 		missions.splice(array_id, 1);
 	}
@@ -78,10 +74,9 @@ if (get_cookie_num("save_date") == "") {
 	load();
 }
 update_missions();
-switch_screen("upgrades");
+switch_screen("units");
 
 // TESTING
-unlocked = 3;
 energy = 1000000;
 units[0] = 40;
 /*
@@ -130,8 +125,7 @@ setInterval(function minute() {
 
 function update_missions() {
 	// generate new missions
-	let now = new Date().getTime();
-	let elapsed = now - save_date;
+	let elapsed = Date.now() - save_date;
 	if (elapsed > mission_freq) {
 		let blocks = Math.floor(elapsed / mission_freq);
 		for (let i = 0; i < blocks; i++) {generate_mission();}
@@ -143,9 +137,9 @@ function update_missions() {
 function generate_mission() {
 	if (missions.length < missions_max) {
 		let state = 0;
-		let min_recruits = 2;//TESTING get_random(Math.max(Math.ceil(get_population() / 6), 1), get_population() + 6);
-		let max_loss = 2;//TESTING get_random(1, Math.min(min_recruits, 6));
-		let max_time = 0;//TESTING get_random(3600000, 3600000*12);
+		let min_recruits = get_random(Math.max(Math.ceil(get_population() / 6), 1), get_population() + 6);
+		let max_loss = get_random(1, Math.min(min_recruits, 6));
+		let max_time = get_random(3600000, 3600000*12);
 		let committ = 1;
 		let end_date = 0;
 		missions.push(new Mission(state, min_recruits, max_loss, max_time, committ, end_date));
@@ -153,8 +147,7 @@ function generate_mission() {
 }
 
 function update_energy(since) { // update energy value when returning from idle mode or loading game
-	let now = new Date().getTime();
-	let missing_energy = get_eps() * Math.ceil((now - since) / 1000);
+	let missing_energy = get_eps() * Math.ceil((Date.now() - since) / 1000);
 	if (missing_energy != null) {
 		adjust_energy(missing_energy);
 		display_message("You earned " + display_num(missing_energy) + " <i class='fas fa-bolt'></i> while away!");
@@ -165,7 +158,6 @@ function save() { // save game to cookies
 	let days = 365;
 	save_date = new Date().getTime();
 	set_cookie("energy", energy, days);
-	set_cookie("unlocked", unlocked, days);
 	set_cookie("save_date", save_date, days);
 	for (let i in counter) {
 		set_cookie("unit" + i, units[i], days);
@@ -185,10 +177,7 @@ function load() { // load game from cookies
 	save_date = get_cookie_num("save_date");
 	for (let i in counter) {
 		units[i] = get_cookie_num("unit" + i);
-		if (get_cookie_num("type" + i) == 1) {unlocked = (i + 1);} // temp
-		wipe_cookie("type" + i); // temp
 	}
-	if (get_cookie_num("unlocked") != 0) {unlocked = get_cookie_num("unlocked");} // temp if check
 	for (let i = 0; i < missions_max; i++) {
 		let min_recruits = get_cookie_num("mission" + i + "min_recruits");
 		if (min_recruits > 0) {
@@ -208,7 +197,6 @@ function load() { // load game from cookies
 function delete_save() {
 	if (confirm("Do you want to delete your progress and start over?")) {
 		wipe_cookie("energy");
-		wipe_cookie("unlocked");
 		wipe_cookie("save_date");
 		for (let i in counter) {
 			wipe_cookie("unit" + i);
@@ -227,8 +215,8 @@ function delete_save() {
 	return false;
 }
 
-function export_save() { // version 1 stores 9 types and 6 missions
-	let str = "v1," + energy + "," + unlocked + "," + save_date + ",";
+function export_save() {
+	let str = "v1," + energy + "," + "," + save_date + ",";
 	for (let i = 0; i < 9; i++) {
 		str += units[i] + ","; 
 	}
@@ -263,7 +251,6 @@ function import_save(str) {
 		for (i in ar) {if (ar[i] != "" && ar[i] != "v1") {ar[i] = Number(ar[i]);}}
 		// version string at ar[0]
 		energy = ar[1];
-		unlocked = ar[2];
 		save_date = ar[3];
 		let index = 4;
 		for (let i = 0; i < 9; i++) {
@@ -369,7 +356,7 @@ function get_unit_cost(type) {
 
 function get_average_cost() {
 	let avg = get_unit_cost(0);
-	for (let i = 0; i < unlocked; i++) {
+	for (let i = 0; i < types; i++) {
 		avg = (avg + get_unit_cost(i)) / 2;
 	}
 	return Math.round(avg);
@@ -399,11 +386,11 @@ function get_eps() { // energy per second, based on population
 	return eps;
 }
 
-function get_random(min, max) {
+function get_random(min, max) { // random integer between min and max
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
-function get_weighted_random(max) { // a basic weighted random from 1 to a max
+function get_weighted_random(max) { // random integer between 1 and max, weighted to max
   return Math.round(max / (Math.random() * max + 1));
 }
 
@@ -426,8 +413,8 @@ function switch_screen(screen) { // displays both the screen and the menu items
 
 function display() { // updates main displays
 	
-	// main variables (note that energy is in the timer functions)
-	document.getElementById("population").innerHTML = `<i class="fas fa-heart"></i> ` + get_available() + " / " + get_population();
+	// main variables (note that energy is displaying in the timer functions)
+	document.getElementById("population").innerHTML = `<i class="fas fa-bug"></i> ` + get_available() + " / " + get_population();
 
 	// display missions
 	let missions_screen = document.getElementById("missions");
@@ -439,7 +426,7 @@ function display() { // updates main displays
 	for (let i in missions) { // for each mission
 		let div = document.createElement("div");
 		let mission = missions[i];
-		let info = `<i class="fas fa-heart"></i> ${mission.get_recruits()} <i class="fas fa-skull"></i> ${mission.get_loss()} <i class="fas fa-clock"></i> ${ms_to_min(mission.get_time())} min.`;
+		let info = `<i class="fas fa-bug"></i> ${mission.get_recruits()} <i class="fas fa-skull"></i> ${mission.get_loss()} <i class="fas fa-clock"></i> ${ms_to_min(mission.get_time())} min.`;
 		let buttons = "";
 		switch (mission.state) {
 			case 0: // ready
@@ -468,45 +455,54 @@ function display() { // updates main displays
 		missions_screen.appendChild(div);
 	}
 
-	// display upgrades
-	let upgrades_screen = document.getElementById("upgrades");
-	upgrades_screen.textContent = "";
-	for (let i = 0; i < unlocked; i++) {
+	// display units
+	let units_screen = document.getElementById("units");
+	units_screen.textContent = "";
+	for (let i = 0; i < types; i++) {
 		let div = document.createElement("div");
 		div.id = "type" + i;
 		div.style.borderColor = colors[i];
-		div.classList = "flexbox upgrade";
+		div.classList = "flexbox unit";
 		div.innerHTML = `
 			<h2 class="flex1">${names[i]} (${units[i]})</h2>
 			<button class="flex0" type="button" onclick="buy_unit(${i})">
 				${display_num(get_unit_cost(i))} <i class='fas fa-bolt'></i>
 			</button>
 		`;
-		upgrades_screen.appendChild(div);
+		units_screen.appendChild(div);
+	}
+
+	// display messages queue
+	let messages_screen = document.getElementById("messages");
+	messages_screen.textContent = "";
+	for (let m in messages) {
+		messages_screen.innerHTML += `<p>${messages[m]}</p>`;
 	}
 
 }
 
 function display_num(num) {
-	return num.toLocaleString('en-US');
+	if (num < 1000000) {
+		return num.toLocaleString('en-US');
+	} else {
+		return num.toExponential(3);
+	}
 }
 
 function display_message(message) {
-	if (message != messages[0]) {messages.push(message);}
-	let div = document.getElementById("message");
-	div.innerHTML = `<p>${messages[0]}</p>`;
-	div.style.display = "block";
+	if (message != messages[0]) {
+		messages.push(get_timestamp(Date.now()) + "   " + message);
+	}
 }
 
 function close_message() {
-	messages.shift(0); // delete the current message
-	if (messages.length == 0) { // if queue empty, hide div
-		let div = document.getElementById("message");
-		div.innerHTML = "";
-		div.style.display = "none";
-	} else { // otherwise, display next
-		display_message(messages[0]);
-	}
+	//messages.shift(0); // delete the current message
+}
+
+function get_timestamp(time) {
+	let d = new Date(time);
+	let yr = "2024";
+	return yr.substring(2,4) + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes();
 }
 
 function set_var(variable, value) { // css variables

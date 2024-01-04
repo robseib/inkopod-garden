@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Inkopods Game</title>
+	<title>Inkopod Garden</title>
 	<link rel="stylesheet" type="text/css" href="styles.css"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -18,22 +18,22 @@
 			<h2 id="population"></h2>
 		</div>
 		<div id="energy-box" class="flex1">
-			<div onclick="adjust_energy(epc)" id="energy"></div>
-			<h2 id="eps"></h2>
+			<div id="energy"></div>
 		</div>
 	</div>
 </header>
 
 <main class="flex1">
 
-	<div id="home" class="screen">
-	</div>
-
-	<div id="upgrades" class="screen">
+	<div id="units" class="screen">
 		<!-- made in JS -->
 	</div>
 	
 	<div id="missions" class="screen">
+		<!-- made in JS -->
+	</div>
+
+	<div id="messages" class="screen">
 		<!-- made in JS -->
 	</div>
 
@@ -45,16 +45,13 @@
 		<button type="button" onclick="import_prompt()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
 	</div>
 
-	<div id="message" class="screen" onclick="close_message()">
-		<!-- made in JS, a special interrupt message screen -->
-	</div>
-
 </main>
 
 <footer class="flex0">
 	<div id="menu" class="flexbox">
-		<div id="menu-upgrades" class="menu-item" onclick="switch_screen('upgrades')"><i class='fas fa-bug'></i></div>
+		<div id="menu-units" class="menu-item" onclick="switch_screen('units')"><i class='fas fa-bug'></i></div>
 		<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')"><i class="fas fa-compass"></i></div>
+		<div id="menu-messages" class="menu-item" onclick="switch_screen('messages')"><i class="fas fa-bell"></i></div>
 		<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')"><i class="fas fa-gear"></i></div>
 	</div>
 </footer>

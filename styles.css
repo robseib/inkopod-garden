@@ -92,7 +92,7 @@ main {overflow-y: scroll;}
 	bottom: 0;
 }
 
-.upgrade {
+.unit {
 	justify-content: space-around;
 	align-items: center;
 	padding: 6px 12px;
