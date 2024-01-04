@@ -53,7 +53,7 @@ button, .button {
 }
 
 .flex1 {flex: 1 1 auto;}
-.flex2 {flex: 0 0 auto;}
+.flex0 {flex: 0 0 auto;}
 
 header, main, footer {
 	width: 100%;
@@ -67,14 +67,6 @@ header {
 }
 
 main {overflow-y: scroll;}
-
-#title-box {
-}
-
-#energy-box {
-}
-
-#energy {cursor: pointer;}
 
 .screen {
 	display: none; /* screens are enabled in javascript */

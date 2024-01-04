@@ -5,56 +5,57 @@
 	<link rel="stylesheet" type="text/css" href="styles.css"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<script src="classes.js" type="text/javascript" defer></script>
 	<script src="script.js" defer></script>
 	<script src="https://kit.fontawesome.com/734f44dfe1.js" crossorigin="anonymous"></script>
 </head>
 
 <body class="flexcol">
 
-<header class="flex0">
-	<div class="flexbox">
-		<div id="title-box" class="flex1">
-			<h1 id="logo">Inkopods</h1>
-			<h2 id="population"></h2>
+	<header class="flex0">
+		<div class="flexbox">
+			<div class="flex1">
+				<h2 id="population"></h2>
+			</div>
+			<div class="flex1">
+				<h2 id="energy"></h2>
+				<h2 id="food"></h2>
+			</div>
 		</div>
-		<div id="energy-box" class="flex1">
-			<div id="energy"></div>
+	</header>
+
+	<main class="flex1">
+
+		<div id="units" class="screen">
+			<!-- made in JS -->
 		</div>
-	</div>
-</header>
+		
+		<div id="missions" class="screen">
+			<!-- made in JS -->
+		</div>
 
-<main class="flex1">
+		<div id="messages" class="screen">
+			<!-- made in JS -->
+		</div>
 
-	<div id="units" class="screen">
-		<!-- made in JS -->
-	</div>
-	
-	<div id="missions" class="screen">
-		<!-- made in JS -->
-	</div>
+		<div id="settings" class="screen">
+			<h1>Settings</h1>
+			<button type="button" onclick="save()"><i class="fas fa-floppy-disk"></i> Save Game</button>
+			<button type="button" onclick="delete_save()"><i class="fas fa-trash"></i> Delete Game</button>
+			<button type="button" onclick="export_save()"><i class="fas fa-cloud-arrow-down"></i> Export Save</button>
+			<button type="button" onclick="import_prompt()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
+		</div>
 
-	<div id="messages" class="screen">
-		<!-- made in JS -->
-	</div>
+	</main>
 
-	<div id="settings" class="screen">
-		<h1>Settings</h1>
-		<button type="button" onclick="save()"><i class="fas fa-floppy-disk"></i> Save Game</button>
-		<button type="button" onclick="delete_save()"><i class="fas fa-trash"></i> Delete Game</button>
-		<button type="button" onclick="export_save()"><i class="fas fa-cloud-arrow-down"></i> Export Save</button>
-		<button type="button" onclick="import_prompt()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
-	</div>
-
-</main>
-
-<footer class="flex0">
-	<div id="menu" class="flexbox">
-		<div id="menu-units" class="menu-item" onclick="switch_screen('units')"><i class='fas fa-bug'></i></div>
-		<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')"><i class="fas fa-compass"></i></div>
-		<div id="menu-messages" class="menu-item" onclick="switch_screen('messages')"><i class="fas fa-bell"></i></div>
-		<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')"><i class="fas fa-gear"></i></div>
-	</div>
-</footer>
+	<footer class="flex0">
+		<div id="menu" class="flexbox">
+			<div id="menu-units" class="menu-item" onclick="switch_screen('units')"><i class='fas fa-bug'></i></div>
+			<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')"><i class="fas fa-compass"></i></div>
+			<div id="menu-messages" class="menu-item" onclick="switch_screen('messages')"><i class="fas fa-bell"></i></div>
+			<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')"><i class="fas fa-gear"></i></div>
+		</div>
+	</footer>
 
 </body>
 </html>
