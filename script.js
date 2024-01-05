@@ -18,19 +18,21 @@ const Types = Colours.length; // number of unit types
 /*       INITIALIZE        */
 /***************************/
 
-if (get_cookie_num("save_date") == "") {
-	// if save file does not exist:
+let cookie_savestring = get_cookie("savestring");
+
+if (cookie_savestring == "") { 
+	// if save file does not exist, start a new session:
 	for (i in Colours) {
 		units[i] = 0;
 	}
 	generate_mission();
 	food = 10;
 	updated = Date.now();
+	display();
 } else { 
 	// if save file exists, load it:
-	load();
+	load(cookie_savestring);
 }
-update();
 switch_screen("units");
 
 // TESTING
@@ -46,20 +48,18 @@ generate_mission();
 /***************************/
 
 setInterval(function every_minute() {
-	update();
-	save();
+	save(); // save game (which also runs update())
 }, 60000);
 
 /***************************/
 /*        FUNCTIONS        */
 /***************************/
 
-// new and improved update function
-function update() { 
+function update() { // update main variables
 	
 	let now = Date.now();
 	let elapsed = now - updated;
-
+	
 	let gained = get_production() * (elapsed / 60000);
 	if (gained != null) {adjust_food(gained);}
 
@@ -86,151 +86,6 @@ function generate_mission() {
 		let end_date = 0;
 		missions.push(new Mission(state, min_recruits, max_loss, max_time, committ, end_date));
 	}
-}
-
-function save() { // save game to cookies
-	let days = 365;
-	save_date = Date.now();
-	set_cookie("save_date", save_date, days);
-	for (let i in Colours) {
-		set_cookie("unit" + i, units[i], days);
-	}
-	for (let i in missions) {
-		set_cookie("mission" + i + "state", missions[i].state, days);
-		set_cookie("mission" + i + "min_recruits", missions[i].min_recruits, days);
-		set_cookie("mission" + i + "max_loss", missions[i].max_loss, days);
-		set_cookie("mission" + i + "max_time", missions[i].max_time, days);
-		set_cookie("mission" + i + "committ", missions[i].committ, days);
-		set_cookie("mission" + i + "end_date", missions[i].end_date, days);
-	}
-}
-
-function load() { // load game from cookies
-	save_date = get_cookie_num("save_date");
-	for (let i in Colours) {
-		units[i] = get_cookie_num("unit" + i);
-	}
-	for (let i = 0; i < Missions_Max; i++) {
-		let min_recruits = get_cookie_num("mission" + i + "min_recruits");
-		if (min_recruits > 0) {
-			missions.push(new Mission(
-				get_cookie_num("mission" + i + "state"), 
-				min_recruits,
-				get_cookie_num("mission" + i + "max_loss"), 
-				get_cookie_num("mission" + i + "max_time"), 
-				get_cookie_num("mission" + i + "committ"), 
-				get_cookie_num("mission" + i + "end_date"))
-			);
-		}
-	}
-	update();
-}
-
-function delete_save() {
-	if (confirm("Do you want to delete your progress and start over?")) {
-		wipe_cookie("save_date");
-		for (let i in Colours) {
-			wipe_cookie("unit" + i);
-		}
-		for (let i = 0; i < Missions_Max; i++) {
-			wipe_cookie("mission" + i + "state");
-			wipe_cookie("mission" + i + "min_recruits");
-			wipe_cookie("mission" + i + "max_loss");
-			wipe_cookie("mission" + i + "max_time");
-			wipe_cookie("mission" + i + "committ");
-			wipe_cookie("mission" + i + "end_date");
-		}
-		location.reload();
-		return true;
-	}
-	return false;
-}
-
-function export_save() {
-	let str = "v1," + "," + "," + save_date + ",";
-	for (let i = 0; i < 9; i++) {
-		str += units[i] + ","; 
-	}
-	for (let i = 0; i < 6; i++) {
-		try {str += missions[i].state + ",";} catch {str += ",";}
-		try {str += missions[i].min_recruits + ",";} catch {str += ",";}
-		try {str += missions[i].max_loss + ",";} catch {str += ",";}
-		try {str += missions[i].max_time + ",";} catch {str += ",";}
-		try {str += missions[i].committ + ",";} catch {str += ",";}
-		try {str += missions[i].end_date + ",";} catch {str += ",";}
-	}
-	str = window.btoa(str);
-	display_message(`
-		Copy and paste somewhere safe:
-		<input type="text" id="savestring" class="textbox" value="${str}">
-		<button type="button" onclick="copy_text('savestring')">Copy</button>
-	`, "Cancel");
-}
-
-function import_prompt() {
-	display_message(`
-		This will overwrite the current game. Paste the text you exported earlier: 
-		<input type="text" id="loadstring" class="textbox" value="">
-		<button type="button" onclick="import_save(copy_text('loadstring'))">Import</button>
-	`);
-}
-
-function import_save(str) {
-	str = window.atob(str);
-	if (str != null) {
-		let ar = str.split(",");
-		for (i in ar) {if (ar[i] != "" && ar[i] != "v1") {ar[i] = Number(ar[i]);}}
-		// version string at ar[0]
-		save_date = ar[3];
-		let index = 4;
-		for (let i = 0; i < 9; i++) {
-			units[i] = ar[index];
-			index++;
-			index++;
-		}
-		missions = [];
-		for (let i = 0; i < 6; i++) { // missions
-			if (typeof ar[index] == "number") {
-				missions.push(new Mission(ar[index],ar[index+1],ar[index+2],ar[index+3],ar[index+4],ar[index+5]));
-			}
-			index += 6;
-		}
-		save();
-	}
-	close_message();
-}
-
-function set_cookie(cname, cvalue, exdays) {
-  const d = new Date();
-  d.setTime(d.getTime() + (exdays*24*60*60*1000));
-  let expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
-}
-
-function wipe_cookie(cname) {
-	document.cookie = cname + "=;" + 0 + ";path=/";
-}
-
-function get_cookie(cname) {
-	let name = cname + "=";
-	let decodedCookie = decodeURIComponent(document.cookie);
-	let ca = decodedCookie.split(';');
-	for(let i = 0; i <ca.length; i++) {
-		let c = ca[i];
-		while (c.charAt(0) == ' ') {
-			c = c.substring(1);
-		}
-		if (c.indexOf(name) == 0) {
-			return c.substring(name.length, c.length);
-		}
-	}
-	return "";
-}
-
-function get_cookie_num(cname) {
-	let value = get_cookie(cname);
-	if (value != "") {return Number(value);}
-	return 0;
 }
 
 function copy(text) {navigator.clipboard.writeText(text);}
@@ -265,8 +120,6 @@ function convert_range(old_value, old_min, old_max, new_min, new_max) {
 	let new_range = new_max - new_min;
 	return (((old_value - old_min) * new_range) / old_range) + new_min;
 }
-
-function get_level(type) {return Math.floor(type / 3);} // zero and up
 
 function get_unit_cost(type) {
 	return (units[type] ** 3) + 1; // TODO this should also be multiplied by a type tier modifier
@@ -308,13 +161,111 @@ function get_random(min, max) { // random integer between min and max
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
-function get_weighted_random(max) { // random integer between 1 and max, weighted to max
+function get_weighted_random(max) { // random integer between 1 and max, weighted towards max
   return Math.round(max / (Math.random() * max + 1));
 }
 
 // return the approximate exponent x is raised to equal y
 function get_base_log(x, y) {
 	return Math.log(y) / Math.log(x);
+}
+
+/***************************/
+/*      SAVE AND LOAD      */
+/***************************/
+
+function save() { // save game to cookies
+	set_cookie("savestring", get_savestring(), 365);
+}
+
+function get_savestring() { // the game state, encoded string of key-value pairs
+	update();
+	let saves = new Map(); // Map for ease of use, will be converted
+	// collect all the game state variables
+	saves.set("updated", updated);
+	saves.set("food", food);
+	// load up savestring
+	let savestring = ""; // blank starter, convert to formatted string "key:value,key:value,"
+	saves.forEach (function(value, key) {
+		savestring += key + ":" + value + ","; 
+	})
+	return window.btoa(savestring); // return encoded savestring
+}
+
+function load(savestring) { // loads game from savestring
+	// decode the string
+	savestring = window.atob(savestring);
+	// check string before loading the saves to variables
+	if (savestring != "") {
+		let array = savestring.split(","); // savestring format in pairs "key:value,key:value,"
+		let saves = new Map(); // a map for ease of use
+		for (pair of array) {
+			let item = pair.split(":"); // split each pair into key and value
+			saves.set(item[0], item[1]); // add the pair to saves map
+		}
+		// assign game state variables from the saves map
+		updated = saves.get("updated");
+		food = saves.get("food");
+	}
+	update();
+}
+
+function delete_game() { // wipe the savestring from cookies
+	if (confirm("Do you want to delete your progress and start over?")) {
+		wipe_cookie("savestring");
+		location.reload();
+		return true;
+	}
+	return false;
+}
+
+function export_save() { // give savestring to user
+	display_message(`
+		Copy and paste somewhere safe:
+		<input type="text" id="savestring" class="textbox" value="${get_savestring()}">
+		<button type="button" onclick="copy_text('savestring')">Copy</button>
+	`, "Cancel");
+}
+
+function import_save() { // allows user to load in a savestring
+	display_message(`
+		This will overwrite the current game. Paste the text you exported earlier and tap "import": 
+		<input type="text" id="loadstring" class="textbox" value="">
+		<button type="button" onclick="load(copy_text('loadstring'))">Import</button>
+	`);
+}
+
+function set_cookie(cname, cvalue, exdays) { // create new cookie
+  const d = new Date();
+  d.setTime(d.getTime() + (exdays*24*60*60*1000));
+  let expires = "expires="+ d.toUTCString();
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+}
+
+function wipe_cookie(cname) {
+	document.cookie = cname + "=;" + 0 + ";path=/";
+}
+
+function get_cookie(cname) {
+	let name = cname + "=";
+	let decodedCookie = decodeURIComponent(document.cookie);
+	let ca = decodedCookie.split(';');
+	for(let i = 0; i <ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') {
+			c = c.substring(1);
+		}
+		if (c.indexOf(name) == 0) {
+			return c.substring(name.length, c.length);
+		}
+	}
+	return "";
+}
+
+function get_cookie_num(cname) {
+	let value = get_cookie(cname);
+	if (value != "") {return Number(value);}
+	return 0;
 }
 
 /***************************/
@@ -427,6 +378,7 @@ function display_message(message) {
 	if (message != messages[0]) {
 		messages.push(get_timestamp(Date.now()) + "   " + message);
 	}
+	display();
 }
 
 function close_message() {
