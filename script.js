@@ -43,17 +43,13 @@ generate_mission();
 generate_mission();
 */
 
-/***************************/
-/*     AUTOMATIC TIMING    */
-/***************************/
+/****************************/
+/*      MAIN FUNCTIONS      */
+/****************************/
 
 setInterval(function every_minute() {
 	save(); // save game (which also runs update())
 }, 60000);
-
-/***************************/
-/*        FUNCTIONS        */
-/***************************/
 
 function update() { // update main variables
 	
@@ -88,16 +84,6 @@ function generate_mission() {
 	}
 }
 
-function copy(text) {navigator.clipboard.writeText(text);}
-
-function copy_text(id) { // copies to clipboard from a text box, and returns the text
-	let textbox = document.getElementById(id);
-	textbox.select();
-	textbox.setSelectionRange(0, 99999); // for mobile devices
-	copy(textbox.value);
-	return textbox.value;
-}
-
 function adjust_food(value) {
 	if ((food + value) >= 0) {food += value};
 }
@@ -113,12 +99,6 @@ function create(type) {
 		adjust_food(-cost);
 	}
 	display();
-}
-
-function convert_range(old_value, old_min, old_max, new_min, new_max) {
-	let old_range = old_max - old_min;
-	let new_range = new_max - new_min;
-	return (((old_value - old_min) * new_range) / old_range) + new_min;
 }
 
 function get_unit_cost(type) {
@@ -155,6 +135,26 @@ function get_production() { // returns "food per minute"
 		fpm += units[i]; // TODO production should be impacted by unit types
 	}
 	return fpm;
+}
+
+/***************************/
+/*         HELPERS         */
+/***************************/
+
+function copy(text) {navigator.clipboard.writeText(text);}
+
+function copy_text(id) { // copies to clipboard from a text box, and returns the text
+	let textbox = document.getElementById(id);
+	textbox.select();
+	textbox.setSelectionRange(0, 99999); // for mobile devices
+	copy(textbox.value);
+	return textbox.value;
+}
+
+function convert_range(old_value, old_min, old_max, new_min, new_max) {
+	let old_range = old_max - old_min;
+	let new_range = new_max - new_min;
+	return (((old_value - old_min) * new_range) / old_range) + new_min;
 }
 
 function get_random(min, max) { // random integer between min and max
