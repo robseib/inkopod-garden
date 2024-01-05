@@ -1,7 +1,19 @@
 // Classes for Inkopod Garden
 
 class Inkopod {
+	#age = 0;
+	#stage = 0;
+	#task = 0;
+	#type = 0;
+	constructor(type) {
+		this.#type = type;
+	}
 	
+	get color() {return Colours[this.type];}
+
+	grow() { // advance its growth stage
+		if (stage = 0) {stage = 1;}
+	}
 }
 
 class Mission {
@@ -14,7 +26,7 @@ class Mission {
 		this.end_date = end_date;
 	}
 	accept() {
-		if ((this.state == 0) && (this.get_recruits() <= get_available())) {
+		if ((this.state == 0) && (this.recruits <= get_available())) {
 			this.end_date = (Date.now() + this.get_time());
 			this.state = 1;
 		}
@@ -40,7 +52,7 @@ class Mission {
 		display_message(message);
 		missions.splice(array_id, 1);
 	}
-	get_recruits() {return (this.min_recruits * this.committ);}
+	get recruits() {return (this.min_recruits * this.committ);}
 	get_time() {
 		let time = 0;
 		if (this.state == 0) {time = Math.ceil(this.max_time / this.committ);}

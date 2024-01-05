@@ -1,9 +1,6 @@
 let updated = 0; // date of the last time values were updated
 let food = 0; // new action currency
-let idle_date = 0; // zero or the date you went into idle mode
-let save_date = Date.now(); // the moment last saved, in ms since epoch
-
-let units = []; // tracks population, total units of each type
+let units = []; // will remove in favour of inkopods array
 let messages = []; // a queue of message strings
 let inkopods = []; // array of Inkopod objects
 let missions = []; // array of Mission objects
@@ -72,6 +69,7 @@ function update() { // update main variables
 	display();
 }
 
+// create a Mission object and add to array
 function generate_mission() {
 	if (missions.length < Missions_Max) {
 		let state = 0;
@@ -84,6 +82,17 @@ function generate_mission() {
 	}
 }
 
+// create Inkopod object and add to array
+function create_inkopod(type) {
+	/*let cost = get_cost(type);
+	if (food >= cost) { // check affordable
+		adjust_unit(type, 1);
+		adjust_food(-cost);
+	}*/
+	inkopods.push(new Inkopod(type));
+	display();
+}
+
 function adjust_food(value) {
 	if ((food + value) >= 0) {food += value};
 }
@@ -92,27 +101,21 @@ function adjust_unit(type, amount) {
 	if ((units[type] + amount) >= 0) {units[type] += amount;}
 }
 
-function create(type) {
-	let cost = get_unit_cost(type);
-	if (food >= cost) { // check affordable
-		adjust_unit(type, 1);
-		adjust_food(-cost);
-	}
-	display();
-}
-
-function get_unit_cost(type) {
+// cost in food to create a new Inkopod
+function get_cost(type) {
 	return (units[type] ** 3) + 1; // TODO this should also be multiplied by a type tier modifier
 }
 
+// deprecated
 function get_average_cost() {
-	let avg = get_unit_cost(0);
+	let avg = get_cost(0);
 	for (let i = 0; i < Types; i++) {
-		avg = (avg + get_unit_cost(i)) / 2;
+		avg = (avg + get_cost(i)) / 2;
 	}
 	return Math.round(avg);
 }
 
+// total number of Inkopods
 function get_population() {
 	let pop = 0;
 	for (let i in Colours) {
@@ -124,7 +127,7 @@ function get_population() {
 function get_available() { // units not tied up in missions
 	let unavailable = 0;
 	for (let i in missions) {
-		if (missions[i].state >= 1) {unavailable += missions[i].get_recruits();}
+		if (missions[i].state >= 1) {unavailable += missions[i].recruits;}
 	}
 	return get_population() - unavailable;
 }
@@ -298,8 +301,8 @@ function display() { // updates main displays
 		div.classList = "flexbox unit";
 		div.innerHTML = `
 			<h2 class="flex1">${units[i]}</h2>
-			<button class="flex0" type="button" onclick="create(${i})">
-				<i class='fas fa-cookie'></i> ${display_num(get_unit_cost(i))}
+			<button class="flex0" type="button" onclick="create_inkopod(${i})">
+				<i class='fas fa-cookie'></i> ${display_num(get_cost(i))}
 			</button>
 		`;
 		units_screen.appendChild(div);
@@ -315,7 +318,7 @@ function display() { // updates main displays
 	for (let i in missions) { // for each mission
 		let div = document.createElement("div");
 		let mission = missions[i];
-		let info = `<i class="fas fa-bug"></i> ${mission.get_recruits()} <i class="fas fa-skull"></i> ${mission.get_loss()} <i class="fas fa-clock"></i> ${mission.get_time() / 60000} min.`;
+		let info = `<i class="fas fa-bug"></i> ${mission.recruits} <i class="fas fa-skull"></i> ${mission.get_loss()} <i class="fas fa-clock"></i> ${mission.get_time() / 60000} min.`;
 		let buttons = "";
 		switch (mission.state) {
 			case 0: // ready
