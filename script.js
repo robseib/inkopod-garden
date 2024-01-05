@@ -1,15 +1,8 @@
 let updated = 0; // date of the last time values were updated
 let food = 0; // new action currency
-let units = []; // will remove in favour of inkopods array
 let messages = []; // a queue of message strings
-let inkopods = []; // array of Inkopod objects
-let missions = []; // array of Mission objects
-
-const Mission_Freq = 1000 * 60 * 30; // 30 min to generate a mission
-const Missions_Max = 6; // max number of missions
+let missions = []; // array of mission objects
 const Screens = ["units", "missions", "messages", "settings"];
-const Colours = ["#00ffff", "#f500f5", "#f2f200", "#00ff00", "#0000f5", "#f20000", "#00f5ab", "#7a00f5", "#f27a00", "#0a0a0a", "#f5f5f5"];
-const Types = Colours.length; // number of unit types
 
 /***************************/
 /*       INITIALIZE        */
@@ -19,9 +12,6 @@ let cookie_savestring = get_cookie("savestring");
 
 if (cookie_savestring == "") { 
 	// if save file does not exist, start a new session:
-	for (i in Colours) {
-		units[i] = 0;
-	}
 	generate_mission();
 	food = 10;
 	updated = Date.now();
@@ -53,12 +43,13 @@ function update() { // update main variables
 	let now = Date.now();
 	let elapsed = now - updated;
 	
-	let gained = get_production() * (elapsed / 60000);
-	if (gained != null) {adjust_food(gained);}
+	// collect more food
+	let gained = inkopod.production * (elapsed / 60000);
+	if (gained != null) {update_food(gained);}
 
 	// generate new missions
-	if (elapsed > Mission_Freq) {
-		let blocks = Math.floor(elapsed / Mission_Freq);
+	if (elapsed > mission.frequency) {
+		let blocks = Math.floor(elapsed / mission.frequency);
 		for (let i = 0; i < blocks; i++) {generate_mission();}
 	}
 	// progress active missions
@@ -69,59 +60,21 @@ function update() { // update main variables
 	display();
 }
 
-// create a Mission object and add to array
+// create a mission object and add to array
 function generate_mission() {
-	if (missions.length < Missions_Max) {
+	if (missions.length < mission.maximum) {
 		let state = 0;
-		let min_recruits = get_random(Math.max(Math.ceil(get_population() / 6), 1), get_population() + 6);
+		let min_recruits = get_random(Math.max(Math.ceil(inkopod.population / 6), 1), inkopod.population + 6);
 		let max_loss = get_random(1, Math.min(min_recruits, 6));
 		let max_time = get_random(3600000, 3600000*12);
 		let committ = 1;
 		let end_date = 0;
-		missions.push(new Mission(state, min_recruits, max_loss, max_time, committ, end_date));
+		missions.push(new mission(state, min_recruits, max_loss, max_time, committ, end_date));
 	}
 }
 
-// create Inkopod object and add to array
-function create_inkopod(type) {
-	/*let cost = get_cost(type);
-	if (food >= cost) { // check affordable
-		adjust_unit(type, 1);
-		adjust_food(-cost);
-	}*/
-	inkopods.push(new Inkopod(type));
-	display();
-}
-
-function adjust_food(value) {
+function update_food(value) {
 	if ((food + value) >= 0) {food += value};
-}
-
-function adjust_unit(type, amount) {
-	if ((units[type] + amount) >= 0) {units[type] += amount;}
-}
-
-// cost in food to create a new Inkopod
-function get_cost(type) {
-	return (units[type] ** 3) + 1; // TODO this should also be multiplied by a type tier modifier
-}
-
-// deprecated
-function get_average_cost() {
-	let avg = get_cost(0);
-	for (let i = 0; i < Types; i++) {
-		avg = (avg + get_cost(i)) / 2;
-	}
-	return Math.round(avg);
-}
-
-// total number of Inkopods
-function get_population() {
-	let pop = 0;
-	for (let i in Colours) {
-		pop += units[i];
-	}
-	return pop;
 }
 
 function get_available() { // units not tied up in missions
@@ -129,15 +82,7 @@ function get_available() { // units not tied up in missions
 	for (let i in missions) {
 		if (missions[i].state >= 1) {unavailable += missions[i].recruits;}
 	}
-	return get_population() - unavailable;
-}
-
-function get_production() { // returns "food per minute"
-	let fpm = 1; // food per minute
-	for (let i in Colours) {
-		fpm += units[i]; // TODO production should be impacted by unit types
-	}
-	return fpm;
+	return inkopod.population - unavailable;
 }
 
 /***************************/
@@ -288,24 +233,27 @@ function switch_screen(screen) { // displays both the screen and the menu items
 function display() { // updates main displays
 	
 	// header variables
-	document.getElementById("population").innerHTML = `<i class="fas fa-bug"></i> ` + get_available() + " / " + get_population();
+	document.getElementById("population").innerHTML = `<i class="fas fa-bug"></i> ` + get_available() + " / " + inkopod.population;
 	document.getElementById("food").innerHTML = "<i class='fas fa-cookie'></i> " + display_num(food);
 
-	// display units
+	// display inkopod population and buy buttons
 	let units_screen = document.getElementById("units");
 	units_screen.textContent = "";
-	for (let i = 0; i < Types; i++) {
-		let div = document.createElement("div");
-		div.id = "type" + i;
-		div.style.borderColor = Colours[i];
-		div.classList = "flexbox unit";
-		div.innerHTML = `
-			<h2 class="flex1">${units[i]}</h2>
-			<button class="flex0" type="button" onclick="create_inkopod(${i})">
-				<i class='fas fa-cookie'></i> ${display_num(get_cost(i))}
-			</button>
-		`;
-		units_screen.appendChild(div);
+	// for each type, create a box
+	for (let type in inkopod.types){
+		if (inkopod.creatable(type)) {
+			let div = document.createElement("div");
+			div.id = "type" + type;
+			div.style.borderColor = inkopod.colour(type);
+			div.classList = "flexbox unit";
+			div.innerHTML = `
+				<h2 class="flex1">${inkopod.count(type)}</h2>
+				<button class="flex0" type="button" onclick="new inkopod(${type})">
+					<i class='fas fa-cookie'></i> ${display_num(inkopod.cost(type))}
+				</button>
+			`;
+			units_screen.appendChild(div);
+		}
 	}
 
 	// display missions
@@ -313,7 +261,7 @@ function display() { // updates main displays
 	missions_screen.textContent = "";
 	// missions introduction
 	let intro = document.createElement("h2");
-	intro.innerHTML = `Send Inkopods on Missions!`;
+	intro.innerHTML = `Send inkopods on missions!`;
 	missions_screen.appendChild(intro);
 	for (let i in missions) { // for each mission
 		let div = document.createElement("div");
@@ -399,21 +347,9 @@ function set_var(variable, value) { // css variables
   r.style.setProperty(variable, value);
 }
 
-function color_scheme(num) {
-	switch (num) {
-		case 0:
-			set_var("--c1", "hsl(188,80%,40%)");
-			set_var("--c2", "hsl(188,80%,40%)");
-			set_var("--cbg", "hsl(188,80%,20%)");
-			break;
-		case 1:
-			set_var("--c1", "hsl(316,80%,40%)");
-			set_var("--c2", "hsl(316,80%,40%)");
-			set_var("--cbg", "hsl(316,80%,20%)");
-			break;
-		default:
-			set_var("--c1", "hsl(90,50%,40%)");
-			set_var("--c2", "hsl(190,50%,40%)");
-			set_var("--cbg", "hsl(90,50%,20%)");
-	}
+function change_hue() {
+	let x = document.getElementById("slider").value;
+	set_var("--c1", "hsl(" + x + ",80%,40%)");
+	set_var("--c2", "hsl(" + x + ",80%,40%)");
+	set_var("--cbg", "hsl(" + x + ",80%,20%)");
 }

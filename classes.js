@@ -1,22 +1,110 @@
-// Classes for Inkopod Garden
+// Inkopod Garden
 
-class Inkopod {
+// everything to do with the inkopod people
+class inkopod {
+
+	static array = []; // contains all inkopods
+
+	// a 2d array with type data
+	// 0 Name, 1 Colour Code, 2 Power Level
+	static types = [
+		["Wild", "black", 3], // 0: special egg that becomes a C, M, or Y on hatch
+		["Cyan", "#00ffff", 1],
+		["Magenta", "#f500f5", 1],
+		["Yellow", "#f2f200", 1],
+		["Green", "00ff00", 3],
+		["Blue", "#0000f5", 3],
+		["Red", "#f20000", 3],
+		["Teal", "#00f5ab", 6],
+		["Orange", "#f27a00", 6],
+		["Purple", "#7a00f5", 6],
+		["Black", "#0a0a0a", 10],
+		["White", "#f5f5f5", 10]
+	]
+
 	#age = 0;
 	#stage = 0;
 	#task = 0;
 	#type = 0;
+	
 	constructor(type) {
 		this.#type = type;
+		if (food >= inkopod.cost(type) && inkopod.creatable(type)) {
+			food -= inkopod.cost(type);
+			inkopod.array.push(this);
+			display();
+		}
 	}
 	
-	get color() {return Colours[this.type];}
+	// basic getters
+	get colour() {return inkopod.colour(this.#type);}
+	get type() {return this.#type;}
 
-	grow() { // advance its growth stage
-		if (stage = 0) {stage = 1;}
+	// advance its growth stage
+	grow() {
+		this.#age++;
+		if (this.#stage = 0) {this.#stage = 1;}
+	}
+
+	// total food per minute
+	static get production() {
+		let fpm = 1;
+		for (let ink of inkopod.array) {
+			fpm += inkopod.power(ink.type);
+		}
+		return fpm;
+	}
+
+	// size of inkopod population
+	static get population() {return inkopod.array.length;}
+	
+	// check if type is creatable, return boolean
+	static creatable(type) {
+		if (inkopod.types[type][0] == "Wild") { // can always create wild type
+			return true;
+		} else if (inkopod.count(type) > 0) { // if you already have the type
+			return true; 
+		} else {
+
+			return false;
+		}
+	}
+
+	// lookup colour code by type
+	static colour(type) {
+		if (type < inkopod.types.length) {
+			return inkopod.types[type][1];
+		} else {
+			return null;
+		}
+	}
+
+	// lookup power level by type
+	static power(type) {
+		if (type < inkopod.types.length) {
+			return inkopod.types[type][2];
+		} else {
+			return null;
+		}
+	}
+
+	// quantity of a type
+	static count(type) {
+		let count = 0;
+		for (let i of inkopod.array) {
+			if (i.type == type) {count++;}
+		}
+		return count;
+	}
+
+	// food cost to create a unit of type
+	static cost(type) {
+		return ((inkopod.count(type) ** 3) + 1) * inkopod.power(type);
 	}
 }
 
-class Mission {
+// everything to do with missions
+class mission {
 	constructor(state, min_recruits, max_loss, max_time, committ, end_date) {
 		this.state = state; //["ready", "accepted", "completed"]
 		this.min_recruits = min_recruits;
@@ -60,4 +148,10 @@ class Mission {
 		return Math.max(time, 0);
 	}
 	get_loss() {return Math.ceil(this.max_loss / this.committ);}
+	// how often Missions occur in milliseconds
+	static get frequency() {
+		return 1000 * 60 * 30; // 30 min to generate Mission
+	}
+	// maximum number of Missions that can be available
+	static get maximum() {return 6;}
 }

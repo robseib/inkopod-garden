@@ -13,6 +13,7 @@
 <body class="flexcol">
 
 	<header class="flex0">
+		<h1>Inkopod Garden</h1>
 		<div class="flexbox">
 			<div class="flex1">
 				<h2 id="population"></h2>
@@ -44,6 +45,7 @@
 			<button type="button" onclick="delete_game()"><i class="fas fa-trash"></i> Delete Game</button>
 			<button type="button" onclick="export_save()"><i class="fas fa-cloud-arrow-down"></i> Export Save</button>
 			<button type="button" onclick="import_save()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
+			<input onchange="change_hue()" oninput="change_hue()" type="range" min="1" max="360" value="322" class="slider" id="slider">
 		</div>
 
 	</main>

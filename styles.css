@@ -18,7 +18,7 @@ html, body {
 
 * {font: 1em "Comfortaa", "Trebuchet MS", sans-serif; color: white;}
 h1, h2 {font-weight: bold;}
-h1 {font-size: 1.2em; margin: .2em 0;}
+h1 {font-size: 1.2em; margin: .2em 0; text-align: center;}
 h2 {font-size: 1em; margin: .1em 0;}
 
 div {
