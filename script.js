@@ -77,14 +77,6 @@ function update_food(value) {
 	if ((food + value) >= 0) {food += value};
 }
 
-function get_available() { // units not tied up in missions
-	let unavailable = 0;
-	for (let i in missions) {
-		if (missions[i].state >= 1) {unavailable += missions[i].recruits;}
-	}
-	return inkopod.population - unavailable;
-}
-
 /***************************/
 /*         HELPERS         */
 /***************************/
@@ -187,7 +179,7 @@ function set_cookie(cname, cvalue, exdays) { // create new cookie
   const d = new Date();
   d.setTime(d.getTime() + (exdays*24*60*60*1000));
   let expires = "expires="+ d.toUTCString();
-  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+  document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/;SameSite=Strict;";
 }
 
 function wipe_cookie(cname) {
@@ -232,9 +224,24 @@ function switch_screen(screen) { // displays both the screen and the menu items
 
 function display() { // updates main displays
 	
-	// header variables
-	document.getElementById("population").innerHTML = `<i class="fas fa-bug"></i> ` + get_available() + " / " + inkopod.population;
-	document.getElementById("food").innerHTML = "<i class='fas fa-cookie'></i> " + display_num(food);
+	// display header
+	document.getElementById("header").innerHTML = `
+		<h1>Inkopod Garden</h1>
+		<div class="flexbox">
+			<div class="flex1">
+				<h2>
+					<i class='fas fa-egg'></i> ${inkopod.count(null, "egg")}
+					<i class='fas fa-bug'></i> ${inkopod.count(null, "idle")}
+					<i class='fas fa-compass'></i> ${inkopod.count(null, "away")}
+				</h2>
+			</div>
+			<div class="flex1">
+				<h2>
+					<i class='fas fa-cookie'></i> ${display_num(food)}
+				</h2>
+			</div>
+		</div>
+	`;
 
 	// display inkopod population and buy buttons
 	let units_screen = document.getElementById("units");
@@ -247,7 +254,11 @@ function display() { // updates main displays
 			div.style.borderColor = inkopod.colour(type);
 			div.classList = "flexbox unit";
 			div.innerHTML = `
-				<h2 class="flex1">${inkopod.count(type)}</h2>
+				<h2 class="flex1">
+					<i class='fas fa-egg'></i> ${inkopod.count(type, "egg")}
+					<i class='fas fa-bug'></i> ${inkopod.count(type, "idle")}
+					<i class='fas fa-compass'></i> ${inkopod.count(type, "away")}
+				</h2>
 				<button class="flex0" type="button" onclick="new inkopod(${type})">
 					<i class='fas fa-cookie'></i> ${display_num(inkopod.cost(type))}
 				</button>

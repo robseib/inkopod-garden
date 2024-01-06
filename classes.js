@@ -6,7 +6,7 @@ class inkopod {
 	static array = []; // contains all inkopods
 
 	// a 2d array with type data
-	// 0 Name, 1 Colour Code, 2 Power Level
+	// 0=Name, 1=Colour, 2=Strength
 	static types = [
 		["Wild", "black", 3], // 0: special egg that becomes a C, M, or Y on hatch
 		["Cyan", "#00ffff", 1],
@@ -22,35 +22,47 @@ class inkopod {
 		["White", "#f5f5f5", 10]
 	]
 
-	#age = 0;
-	#stage = 0;
-	#task = 0;
-	#type = 0;
-	
 	constructor(type) {
-		this.#type = type;
-		if (food >= inkopod.cost(type) && inkopod.creatable(type)) {
+		if (food >= inkopod.cost(type) && inkopod.creatable(type) && type >=0 && type < inkopod.types.length) {
+			this.type = type;
+			this.colour = inkopod.colour(this.type);
+			this.strength = inkopod.strength(this.type);
+			this.birthday = Date.now();
+			this.state = "egg"; // static states = ["egg","idle","busy"];
 			food -= inkopod.cost(type);
 			inkopod.array.push(this);
 			display();
 		}
 	}
 	
-	// basic getters
-	get colour() {return inkopod.colour(this.#type);}
-	get type() {return this.#type;}
+	get age() {return Date.now() - this.birthday;}
 
-	// advance its growth stage
-	grow() {
-		this.#age++;
-		if (this.#stage = 0) {this.#stage = 1;}
+	// user will click an egg to run this
+	hatch() {
+		if (this.mature()) {
+			this.state = "idle";
+			if (this.type == 0) {
+				this.type = get_random(1,3);
+			}
+		}
+	}
+
+	// egg ready to hatch? return boolean
+	mature() {
+		if (this.age >= (3000 * this.strength)) { // TESTING, normally 300,000
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	// total food per minute
 	static get production() {
 		let fpm = 1;
 		for (let ink of inkopod.array) {
-			fpm += inkopod.power(ink.type);
+			if (ink.type == "idle") {
+				fpm += inkopod.strength(ink.type);
+			}
 		}
 		return fpm;
 	}
@@ -62,10 +74,9 @@ class inkopod {
 	static creatable(type) {
 		if (inkopod.types[type][0] == "Wild") { // can always create wild type
 			return true;
-		} else if (inkopod.count(type) > 0) { // if you already have the type
+		} else if (inkopod.count(type, "idle") > 0) { // if you already have the type
 			return true; 
 		} else {
-
 			return false;
 		}
 	}
@@ -80,7 +91,7 @@ class inkopod {
 	}
 
 	// lookup power level by type
-	static power(type) {
+	static strength(type) {
 		if (type < inkopod.types.length) {
 			return inkopod.types[type][2];
 		} else {
@@ -88,20 +99,26 @@ class inkopod {
 		}
 	}
 
-	// quantity of a type
-	static count(type) {
+	// quantity of a type or state, or both
+	static count(type = null, state = null) {
 		let count = 0;
-		for (let i of inkopod.array) {
-			if (i.type == type) {count++;}
+		for (let ink of inkopod.array) {
+			if (type == null || state == null) {
+				if (ink.type == type || ink.state == state) {count++;}
+			} else {
+				if (ink.type == type && ink.state == state) {count++;}
+			}
 		}
 		return count;
 	}
 
 	// food cost to create a unit of type
 	static cost(type) {
-		return ((inkopod.count(type) ** 3) + 1) * inkopod.power(type);
+		return ((inkopod.count(type) ** 3) + 1) * inkopod.strength(type);
 	}
 }
+
+
 
 // everything to do with missions
 class mission {
