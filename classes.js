@@ -8,7 +8,7 @@ class inkopod {
 	// a 2d array with type data
 	// 0=Name, 1=Colour, 2=Strength
 	static types = [
-		["Wild", "black", 3], // 0: special egg that becomes a C, M, or Y on hatch
+		["Wild", "gray", 3], // becomes a C, M, or Y on create
 		["Cyan", "#00ffff", 1],
 		["Magenta", "#f500f5", 1],
 		["Yellow", "#f2f200", 1],
@@ -23,36 +23,27 @@ class inkopod {
 	]
 
 	constructor(type) {
-		if (food >= inkopod.cost(type) && inkopod.creatable(type) && type >=0 && type < inkopod.types.length) {
-			this.type = type;
+		if (food >= inkopod.cost(type) && inkopod.creatable(type) && type < inkopod.types.length) {
+			if (type <= 0 || type == null) {
+				this.type = get_random(1,3);
+			} else {
+				this.type = type;
+			}
 			this.colour = inkopod.colour(this.type);
 			this.strength = inkopod.strength(this.type);
 			this.birthday = Date.now();
-			this.state = "egg"; // static states = ["egg","idle","busy"];
+			this.state = "egg"; // egg, mature, idle, busy;
 			food -= inkopod.cost(type);
 			inkopod.array.push(this);
-			display();
 		}
 	}
 	
 	get age() {return Date.now() - this.birthday;}
 
-	// user will click an egg to run this
+	// user will click a mature egg to run this
 	hatch() {
-		if (this.mature()) {
+		if (this.state == "mature") {
 			this.state = "idle";
-			if (this.type == 0) {
-				this.type = get_random(1,3);
-			}
-		}
-	}
-
-	// egg ready to hatch? return boolean
-	mature() {
-		if (this.age >= (3000 * this.strength)) { // TESTING, normally 300,000
-			return true;
-		} else {
-			return false;
 		}
 	}
 
@@ -60,7 +51,7 @@ class inkopod {
 	static get production() {
 		let fpm = 1;
 		for (let ink of inkopod.array) {
-			if (ink.type == "idle") {
+			if (ink.state == "idle") {
 				fpm += inkopod.strength(ink.type);
 			}
 		}
@@ -72,31 +63,28 @@ class inkopod {
 	
 	// check if type is creatable, return boolean
 	static creatable(type) {
-		if (inkopod.types[type][0] == "Wild") { // can always create wild type
+		if (inkopod.name(type) == "Wild") { // can always create wild type
 			return true;
 		} else if (inkopod.count(type, "idle") > 0) { // if you already have the type
-			return true; 
+			return true;
 		} else {
 			return false;
 		}
 	}
 
-	// lookup colour code by type
-	static colour(type) {
-		if (type < inkopod.types.length) {
-			return inkopod.types[type][1];
-		} else {
-			return null;
-		}
+	// lookup name by type
+	static name(type) {
+		return inkopod.types[type][0];
 	}
 
-	// lookup power level by type
+	// lookup colour code by type
+	static colour(type) {
+		return inkopod.types[type][1];
+	}
+
+	// lookup strength modifier by type
 	static strength(type) {
-		if (type < inkopod.types.length) {
-			return inkopod.types[type][2];
-		} else {
-			return null;
-		}
+		return inkopod.types[type][2];
 	}
 
 	// quantity of a type or state, or both
@@ -114,9 +102,27 @@ class inkopod {
 
 	// food cost to create a unit of type
 	static cost(type) {
-		return ((inkopod.count(type) ** 3) + 1) * inkopod.strength(type);
+		if (type == 0) {
+			return ((inkopod.population ** 3) + 1) * 3;
+		} else {
+			return ((inkopod.count(type) ** 3) + 1) * inkopod.strength(type);
+		}
+	}
+
+	// runs every minute to cause all the inkopods to mature
+	static mature() {
+		setInterval(function() {
+			for (let ink of inkopod.array) {
+				// TESTING, normally 300,000
+				if (ink.state == "egg" && ink.age >= (3000 * ink.strength)) {
+					ink.state = "mature";
+				}
+			}
+		}, 1000); // testing, normally 60,000
 	}
 }
+
+inkopod.mature(); // ensures this script starts running
 
 
 

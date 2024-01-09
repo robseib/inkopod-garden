@@ -2,7 +2,7 @@ let updated = 0; // date of the last time values were updated
 let food = 0; // new action currency
 let messages = []; // a queue of message strings
 let missions = []; // array of mission objects
-const Screens = ["units", "missions", "messages", "settings"];
+const Screens = ["home", "messages", "settings"];
 
 /***************************/
 /*       INITIALIZE        */
@@ -20,25 +20,26 @@ if (cookie_savestring == "") {
 	// if save file exists, load it:
 	load(cookie_savestring);
 }
-switch_screen("units");
+switch_screen("home");
 
 // TESTING
-/*
 food = 1000;
-units[0] = 40;
-generate_mission();
-generate_mission();
-*/
 
 /****************************/
 /*      MAIN FUNCTIONS      */
 /****************************/
 
-setInterval(function every_minute() {
+// save the game every minute
+setInterval(function() {
 	save(); // save game (which also runs update())
 }, 60000);
 
-function update() { // update main variables
+// update the display every 10 seconds
+setInterval(function() {
+	update();
+}, 10000)
+
+function update() { // update main variables and the display
 	
 	let now = Date.now();
 	let elapsed = now - updated;
@@ -212,7 +213,7 @@ function get_cookie_num(cname) {
 /*         DISPLAY         */
 /***************************/
 
-function switch_screen(screen) { // displays both the screen and the menu items
+function switch_screen(screen) {
 	for (let s of Screens) {
 		document.getElementById(s).style.display = "none";
 		document.getElementById("menu-"+s).classList.remove("menu-selected");
@@ -222,51 +223,73 @@ function switch_screen(screen) { // displays both the screen and the menu items
 	document.getElementById("menu-"+screen).classList.add("menu-selected");
 }
 
-function display() { // updates main displays
-	
-	// display header
+function display() { // updates all displays
+	display_header();
+	display_home_screen();
+	display_mission_screen();
+	display_messages_screen();
+}
+
+function display_header() {
 	document.getElementById("header").innerHTML = `
 		<h1>Inkopod Garden</h1>
-		<div class="flexbox">
-			<div class="flex1">
-				<h2>
-					<i class='fas fa-egg'></i> ${inkopod.count(null, "egg")}
-					<i class='fas fa-bug'></i> ${inkopod.count(null, "idle")}
-					<i class='fas fa-compass'></i> ${inkopod.count(null, "away")}
-				</h2>
-			</div>
-			<div class="flex1">
-				<h2>
-					<i class='fas fa-cookie'></i> ${display_num(food)}
-				</h2>
-			</div>
-		</div>
+		<h2>
+			<i class='fas fa-bug'></i> : ${inkopod.population} | 
+			<i class='fas fa-cookie'></i> : ${display_num(food)}
+		</h2>
 	`;
+}
 
-	// display inkopod population and buy buttons
-	let units_screen = document.getElementById("units");
-	units_screen.textContent = "";
-	// for each type, create a box
+// home screen shows inkopods and allows you to make more of them
+function display_home_screen() {
+	
+	// list creatable eggs, one box for each type
+	let egg_area = document.getElementById("egg-area");
+	egg_area.textContent = "";
 	for (let type in inkopod.types){
 		if (inkopod.creatable(type)) {
-			let div = document.createElement("div");
-			div.id = "type" + type;
-			div.style.borderColor = inkopod.colour(type);
-			div.classList = "flexbox unit";
-			div.innerHTML = `
-				<h2 class="flex1">
-					<i class='fas fa-egg'></i> ${inkopod.count(type, "egg")}
-					<i class='fas fa-bug'></i> ${inkopod.count(type, "idle")}
-					<i class='fas fa-compass'></i> ${inkopod.count(type, "away")}
-				</h2>
-				<button class="flex0" type="button" onclick="new inkopod(${type})">
-					<i class='fas fa-cookie'></i> ${display_num(inkopod.cost(type))}
-				</button>
+			let btn = document.createElement("button");
+			btn.classList = "flex0";
+			btn.style.borderColor = inkopod.colour(type);
+			btn.onclick = function() {
+				new inkopod(type);
+				display();
+			};
+			btn.innerHTML = `
+				+ <i class='fas fa-egg' style="color: ${inkopod.colour(type)}"></i> 
+				(${display_num(inkopod.cost(type))})
 			`;
-			units_screen.appendChild(div);
+			egg_area.appendChild(btn);
 		}
 	}
 
+	// list entire population, in order of appearance
+	let pop_area = document.getElementById("pop-area");
+	pop_area.textContent = "";
+	for (let ink of inkopod.array) {
+		let btn = document.createElement("button");
+		btn.style.borderColor = ink.colour;
+		btn.classList = "flex0";
+		btn.onclick = function() {
+			ink.hatch();
+			display();
+		};
+		let icon = "";
+		switch (ink.state) {
+			case "egg": icon = "egg"; break;
+			case "mature": icon = "circle-exclamation"; break;
+			case "idle": icon = "bug"; break;
+			case "busy": icon = "compass"; break;
+		}
+		btn.innerHTML = `
+			<i class='fas fa-${icon}' style="color: ${ink.colour}"></i>
+		`;
+		pop_area.appendChild(btn);
+	}
+}
+
+function display_mission_screen() {
+	/*
 	// display missions
 	let missions_screen = document.getElementById("missions");
 	missions_screen.textContent = "";
@@ -297,7 +320,6 @@ function display() { // updates main displays
 				div.onclick = function (){missions[i].complete(i)};
 				break;
 		}
-
 		div.id = "mission" + i;
 		div.classList = "mission";
 		div.innerHTML = `
@@ -305,24 +327,19 @@ function display() { // updates main displays
 			<div class="flexbox mission-buttons">${buttons}</div>`;
 		missions_screen.appendChild(div);
 	}
+	*/
+}
 
-	// display messages queue
+function display_messages_screen() {
 	let messages_screen = document.getElementById("messages");
 	messages_screen.textContent = "";
 	for (let m in messages) {
 		messages_screen.innerHTML += `<p>${messages[m]}</p>`;
 	}
-
 }
 
 function display_num(num) {
-	return Math.trunc(num.toLocaleString('en-US'));
-	//num = Math.trunc(num); // only want whole numbers
-	//let size = num.toString().length;
-	//console.log(size);
-	//num /= (10 * size);
-	//return num;
-	//return (Math.trunc(num / 10) / 10) + " (10^" + (size * 3) + ")";
+	return Math.trunc(num);
 	/*if (num < 1000000) {
 		return num.toLocaleString('en-US');
 	} else {
@@ -344,7 +361,7 @@ function display_message(message) {
 }
 
 function close_message() {
-	//messages.shift(0); // delete the current message
+	//messages.shift(0);
 }
 
 function get_timestamp(time) {

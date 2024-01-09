@@ -18,8 +18,9 @@ html, body {
 
 * {font: 1em "Comfortaa", "Trebuchet MS", sans-serif; color: white;}
 h1, h2 {font-weight: bold;}
-h1 {font-size: 1.2em; margin: .2em 0; text-align: center;}
-h2 {font-size: 1em; margin: .1em 0;}
+h1 {font-size: 1.5em; margin: .2em 0; text-align: center;}
+h2 {font-size: 1.1em; margin: .1em 0;}
+h3 {font-size: 1em; margin: .1em 0}
 
 div {
 	display: inline-block;
@@ -45,6 +46,7 @@ button, .button {
 .flexbox {
 	display: flex;
 	gap: .5em;
+	flex-wrap: wrap;
 }
 
 .flexcol {
@@ -60,9 +62,10 @@ header, main, footer {
 	box-sizing: border-box;
 }
 
-header {
-	padding: 12px;
+header, footer {
+	padding: 1em;
 	align-items: center;
+	text-align: center;
 	background-color: var(--c1);
 }
 
@@ -70,7 +73,6 @@ main {overflow-y: scroll;}
 
 .screen {
 	display: none; /* screens are enabled in javascript */
-	padding: 8px 12px;
 	width: 100%;
 	height: 100%;
 	background-color: var(--cbg);
@@ -82,17 +84,6 @@ main {overflow-y: scroll;}
 	width: 100%;
 	padding: .8em;
 	bottom: 0;
-}
-
-.unit {
-	justify-content: space-around;
-	align-items: center;
-	padding: 6px 12px;
-	margin: 6px 0;
-	width: 100%;
-	border-width: 5px;
-	border-style: solid;
-	border-radius: 15px;
 }
 
 .mission {
@@ -123,11 +114,6 @@ main {overflow-y: scroll;}
 	flex-flow: wrap;
 }
 
-footer {
-	padding: 0 1em 1em 1em;
-	background-color: var(--c2);
-}
-
 .menu-item {
 	display: none; /* menu items are enabled in javascript */
 	flex: 1 1;
@@ -140,8 +126,7 @@ footer {
 }
 
 .menu-selected {
-	border-bottom-right-radius: 10px;
-	border-bottom-left-radius: 10px;
+	border-radius: 40px;
 	background-color: var(--cbg);
 }
 

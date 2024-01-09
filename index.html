@@ -18,8 +18,11 @@
 
 	<main class="flex1">
 
-		<div id="units" class="screen">
-			<!-- made in JS -->
+		<div id="home" class="screen">
+			<h2>Lay Eggs</h2>
+			<div id="egg-area" class="flexbox"></div>
+			<h2>Population</h2>
+			<div id="pop-area" class="flexbox"></div>
 		</div>
 		
 		<div id="missions" class="screen">
@@ -43,10 +46,18 @@
 
 	<footer class="flex0">
 		<div id="menu" class="flexbox">
-			<div id="menu-units" class="menu-item" onclick="switch_screen('units')"><i class='fas fa-bug'></i></div>
-			<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')"><i class="fas fa-compass"></i></div>
-			<div id="menu-messages" class="menu-item" onclick="switch_screen('messages')"><i class="fas fa-bell"></i></div>
-			<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')"><i class="fas fa-gear"></i></div>
+			<div id="menu-home" class="menu-item" onclick="switch_screen('home')">
+				<i class='fas fa-home'></i>
+			</div>
+			<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')">
+				<i class="fas fa-compass"></i>
+			</div>
+			<div id="menu-messages" class="menu-item" onclick="switch_screen('messages')">
+				<i class="fas fa-bell"></i>
+			</div>
+			<div id="menu-settings" class="menu-item" onclick="switch_screen('settings')">
+				<i class="fas fa-gear"></i>
+			</div>
 		</div>
 	</footer>
 
