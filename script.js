@@ -1,5 +1,5 @@
 let updated = Date.now(); // date of the last time values were updated
-let food = 10; // new action currency
+let food = 10; // action currency
 let messages = []; // a queue of message strings
 let missions = []; // array of mission objects
 let cookie_savestring = get_cookie("savestring");
@@ -31,9 +31,8 @@ function update() { // update main variables and the display
 	let now = Date.now();
 	let elapsed = now - updated;
 	
-	// collect more food
-	let gained = inkopod.production * (elapsed / 60000);
-	if (gained != null) {update_food(gained);}
+	// collect more food, production is in food per minute
+	update_food(inkopod.production * (elapsed / 60000));
 
 	// generate new missions
 	if (elapsed > mission.frequency) {
@@ -64,7 +63,7 @@ function generate_mission() {
 function update_food(value) {
 	if ((food + value) >= 0) {
 		food += value;
-		food = Math.round(food, 4);
+		food = food.toFixed(4);
 	};
 }
 
@@ -156,7 +155,7 @@ function load(savestring) {
 
 		// assign game state variables from the saves map
 		updated = saves.get("updated");
-		food = saves.get("food");
+		food = parseFloat(saves.get("food"));
 
 		// restore inkopods
 		for (let id = 0; id < saves.get("population"); id++) {
