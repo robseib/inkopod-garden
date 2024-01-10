@@ -74,7 +74,8 @@ function update_food(value) {
 
 function copy(text) {navigator.clipboard.writeText(text);}
 
-function copy_text(id) { // copies to clipboard from a text box, and returns the text
+// copies to clipboard from a text box, and returns the text
+function copy_text(id) {
 	let textbox = document.getElementById(id);
 	textbox.select();
 	textbox.setSelectionRange(0, 99999); // for mobile devices
@@ -168,32 +169,14 @@ function load(savestring) {
 
 	}
 
-	//update(); // update everything from newly loaded data
+	update(); // update everything from newly loaded data
 }
 
 function delete_game() { // wipe the savestring from cookies
 	if (confirm("Do you want to delete your progress and start over?")) {
 		wipe_cookie("savestring");
 		location.reload();
-		return true;
 	}
-	return false;
-}
-
-function export_save() { // give savestring to user
-	display_message(`
-		Copy and paste somewhere safe:
-		<input type="text" id="savestring" class="textbox" value="${get_savestring()}">
-		<button type="button" onclick="copy_text('savestring')">Copy</button>
-	`, "Cancel");
-}
-
-function import_save() { // allows user to load in a savestring
-	display_message(`
-		This will overwrite the current game. Paste the text you exported earlier and tap "import": 
-		<input type="text" id="loadstring" class="textbox" value="">
-		<button type="button" onclick="load(copy_text('loadstring'))">Import</button>
-	`);
 }
 
 function set_cookie(cname, cvalue, exdays) { // create new cookie

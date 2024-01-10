@@ -34,11 +34,34 @@
 		</div>
 
 		<div id="settings" class="screen">
+			
 			<h1>Settings</h1>
-			<button type="button" onclick="delete_game()"><i class="fas fa-trash"></i> Delete Game</button>
-			<button type="button" onclick="export_save()"><i class="fas fa-cloud-arrow-down"></i> Export Save</button>
-			<button type="button" onclick="import_save()"><i class="fas fa-cloud-arrow-up"></i> Import Save</button>
+			
+			<h2>Save Game</h2>
+			<p>The game is automatically saved to cookies, but I recommended backing up from time to time. Tap "Copy" to copy to your current progress to device clipboard, then paste it somewhere safe.</p>
+			<button type="button" onclick="copy(get_savestring())">
+				<i class="fas fa-floppy-disk"></i> Copy
+			</button>
+			<br><br>
+
+			<h2>Import Game</h2>
+			<p>Paste the text you copied earlier and tap the "Import" button:</p>
+			<button type="button" onclick="load(copy_text('loadstring'))">
+				<i class="fas fa-cloud-arrow-up"></i> Import
+			</button>
+			<input type="text" id="loadstring" class="textbox" value="">
+			<br><br>
+
+			<h2>Reset Game</h2>
+			<p>This will completely delete and reset the game.</p>
+			<button type="button" onclick="delete_game()">
+				<i class="fas fa-trash"></i> Reset
+			</button>
+			<br><br>	
+
+			<h2>Colour Changer</h2>
 			<input onchange="change_hue()" oninput="change_hue()" type="range" min="1" max="360" value="322" class="slider" id="slider">
+
 		</div>
 
 	</main>
@@ -46,7 +69,7 @@
 	<footer class="flex0">
 		<div id="menu" class="flexbox">
 			<div id="menu-home" class="menu-item" onclick="switch_screen('home')">
-				<i class='fas fa-home'></i>
+				<i class="fas fa-home"></i>
 			</div>
 			<div id="menu-missions" class="menu-item" onclick="switch_screen('missions')">
 				<i class="fas fa-compass"></i>
