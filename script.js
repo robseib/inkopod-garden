@@ -1,29 +1,16 @@
-let updated = 0; // date of the last time values were updated
-let food = 0; // new action currency
+let updated = Date.now(); // date of the last time values were updated
+let food = 10; // new action currency
 let messages = []; // a queue of message strings
 let missions = []; // array of mission objects
-const Screens = ["home", "messages", "settings"];
-
-/***************************/
-/*       INITIALIZE        */
-/***************************/
-
 let cookie_savestring = get_cookie("savestring");
+const Screens = ["home", "settings"];
 
-if (cookie_savestring == "") { 
-	// if save file does not exist, start a new session:
-	generate_mission();
-	food = 10;
-	updated = Date.now();
-	display();
-} else { 
-	// if save file exists, load it:
+// if save file exists, load it:
+if (cookie_savestring != "") {
 	load(cookie_savestring);
 }
-switch_screen("home");
 
-// TESTING
-food = 1000;
+switch_screen("home");
 
 /****************************/
 /*      MAIN FUNCTIONS      */
@@ -75,7 +62,10 @@ function generate_mission() {
 }
 
 function update_food(value) {
-	if ((food + value) >= 0) {food += value};
+	if ((food + value) >= 0) {
+		food += value;
+		food = Math.round(food, 4);
+	};
 }
 
 /***************************/
@@ -119,36 +109,66 @@ function save() { // save game to cookies
 	set_cookie("savestring", get_savestring(), 365);
 }
 
-function get_savestring() { // the game state, encoded string of key-value pairs
-	update();
+// the game state, encoded string of key-value pairs
+function get_savestring() {
+	
+	update(); // update everything before saving
+
 	let saves = new Map(); // Map for ease of use, will be converted
-	// collect all the game state variables
+	
+	// collect game state variables
 	saves.set("updated", updated);
 	saves.set("food", food);
+	saves.set("population", inkopod.population);
+
+	// collect inkopod variables
+	for (let id in inkopod.array) { 
+		saves.set("ink" + id + "type", inkopod.array[id].type);
+		saves.set("ink" + id + "birth", inkopod.array[id].birthday);
+		saves.set("ink" + id + "state", inkopod.array[id].state);
+	}
+
 	// load up savestring
 	let savestring = ""; // blank starter, convert to formatted string "key:value,key:value,"
 	saves.forEach (function(value, key) {
 		savestring += key + ":" + value + ","; 
 	})
+
 	return window.btoa(savestring); // return encoded savestring
 }
 
-function load(savestring) { // loads game from savestring
+// Loads game from Savestring
+function load(savestring) {
+
 	// decode the string
 	savestring = window.atob(savestring);
+	
 	// check string before loading the saves to variables
 	if (savestring != "") {
+
 		let array = savestring.split(","); // savestring format in pairs "key:value,key:value,"
 		let saves = new Map(); // a map for ease of use
-		for (pair of array) {
-			let item = pair.split(":"); // split each pair into key and value
-			saves.set(item[0], item[1]); // add the pair to saves map
+		for (let pair of array) {
+			// split the pair and add to saves map
+			saves.set(pair.split(":")[0], pair.split(":")[1]); 
 		}
+
 		// assign game state variables from the saves map
 		updated = saves.get("updated");
 		food = saves.get("food");
+
+		// restore inkopods
+		for (let id = 0; id < saves.get("population"); id++) {
+			inkopod.restore(
+				saves.get("ink" + id + "type"),
+				saves.get("ink" + id + "birth"),
+				saves.get("ink" + id + "state")
+			);
+		}
+
 	}
-	update();
+
+	//update(); // update everything from newly loaded data
 }
 
 function delete_game() { // wipe the savestring from cookies
@@ -191,7 +211,7 @@ function get_cookie(cname) {
 	let name = cname + "=";
 	let decodedCookie = decodeURIComponent(document.cookie);
 	let ca = decodedCookie.split(';');
-	for(let i = 0; i <ca.length; i++) {
+	for(let i = 0; i < ca.length; i++) {
 		let c = ca[i];
 		while (c.charAt(0) == ' ') {
 			c = c.substring(1);
@@ -221,6 +241,7 @@ function switch_screen(screen) {
 	}
 	document.getElementById(screen).style.display = "inline-block";
 	document.getElementById("menu-"+screen).classList.add("menu-selected");
+	display();
 }
 
 function display() { // updates all displays
@@ -252,7 +273,7 @@ function display_home_screen() {
 			btn.classList = "flex0";
 			btn.style.borderColor = inkopod.colour(type);
 			btn.onclick = function() {
-				new inkopod(type);
+				inkopod.create(type);
 				display();
 			};
 			btn.innerHTML = `

@@ -1,7 +1,49 @@
 // Inkopod Garden
 
-// everything to do with the inkopod people
+// everything to do with the inkopods
 class inkopod {
+
+	// should only be constructed using the create and restore methods
+	static #constructable = false;
+
+	constructor(type, birthday, state) {
+		if (inkopod.#constructable) {
+			this.type = type;
+			this.birthday = birthday; // date in milliseconds from epoch
+			this.state = state; // egg, mature, idle, busy;
+			this.colour = inkopod.colour(this.type);
+			this.strength = inkopod.strength(this.type);
+			inkopod.array.push(this);
+			inkopod.#constructable = false;
+		}
+	}
+
+	// create a brand new Inkopod and adjust the food supply accordingly
+	// this only runs if the inkopod is considered creatable
+	static create(type) {
+		if (inkopod.creatable(type)) {
+			inkopod.#constructable = true;
+			update_food(-inkopod.cost(type));
+			if (type == 0) {type = get_random(1,3);}
+			new inkopod(type, Date.now(), "egg");
+		}
+	}
+
+	// restore an inkopod from earlier, such as when loading save file
+	// this one does not require a type of inkopod is creatable
+	static restore(type, birthday, state) {
+		inkopod.#constructable = true;
+		new inkopod(type, birthday, state);
+	}
+
+	get age() {return Date.now() - this.birthday;}
+
+	// user will click a mature egg to run this
+	hatch() {
+		if (this.state == "mature") {
+			this.state = "idle";
+		}
+	}
 
 	static array = []; // contains all inkopods
 
@@ -22,31 +64,6 @@ class inkopod {
 		["White", "#f5f5f5", 10]
 	]
 
-	constructor(type) {
-		if (food >= inkopod.cost(type) && inkopod.creatable(type) && type < inkopod.types.length) {
-			if (type <= 0 || type == null) {
-				this.type = get_random(1,3);
-			} else {
-				this.type = type;
-			}
-			this.colour = inkopod.colour(this.type);
-			this.strength = inkopod.strength(this.type);
-			this.birthday = Date.now();
-			this.state = "egg"; // egg, mature, idle, busy;
-			food -= inkopod.cost(type);
-			inkopod.array.push(this);
-		}
-	}
-	
-	get age() {return Date.now() - this.birthday;}
-
-	// user will click a mature egg to run this
-	hatch() {
-		if (this.state == "mature") {
-			this.state = "idle";
-		}
-	}
-
 	// total food per minute
 	static get production() {
 		let fpm = 1;
@@ -63,12 +80,15 @@ class inkopod {
 	
 	// check if type is creatable, return boolean
 	static creatable(type) {
-		if (inkopod.name(type) == "Wild") { // can always create wild type
-			return true;
-		} else if (inkopod.count(type, "idle") > 0) { // if you already have the type
-			return true;
-		} else {
-			return false;
+		// check there is enough food and that the type actually exists
+		if (food >= inkopod.cost(type) && type >= 0 && type < inkopod.types.length) {
+			if (inkopod.name(type) == "Wild") { // can always create wild type
+				return true;
+			} else if (inkopod.count(type, "idle") > 0) { // if you already have at least one of the type
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 
