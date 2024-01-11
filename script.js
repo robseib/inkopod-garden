@@ -21,7 +21,7 @@ setInterval(function() {
 	save(); // save game (which also runs update())
 }, 60000);
 
-// update the display every 10 seconds
+// update variables and display every 10 seconds
 setInterval(function() {
 	update();
 }, 10000)
@@ -61,6 +61,7 @@ function generate_mission() {
 }
 
 function update_food(value) {
+	food = parseFloat(food); // ensure its a number first
 	if ((food + value) >= 0) {
 		food += value;
 		food = food.toFixed(4);
@@ -249,7 +250,7 @@ function display_home_screen() {
 	// list creatable eggs, one box for each type
 	let egg_area = document.getElementById("egg-area");
 	egg_area.textContent = "";
-	for (let type in inkopod.types){
+	for (let type of inkopod.types.keys()){
 		if (inkopod.creatable(type)) {
 			let btn = document.createElement("button");
 			btn.classList = "flex0";

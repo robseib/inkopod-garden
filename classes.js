@@ -8,11 +8,14 @@ class inkopod {
 
 	constructor(type, birthday, state) {
 		if (inkopod.#constructable) {
-			this.type = type;
+			// set by parameter
+			this.type = type; // name of the type like "Cyan"
 			this.birthday = birthday; // date in milliseconds from epoch
 			this.state = state; // egg, mature, idle, busy;
-			this.colour = inkopod.colour(this.type);
-			this.strength = inkopod.strength(this.type);
+			// set from predefined traits
+			this.colour = inkopod.colour(type);
+			this.strength = inkopod.strength(type);
+			// add to the array
 			inkopod.array.push(this);
 			inkopod.#constructable = false;
 		}
@@ -20,17 +23,22 @@ class inkopod {
 
 	// create a brand new Inkopod and adjust the food supply accordingly
 	// this only runs if the inkopod is considered creatable
+	// expecting a valid type name like "Cyan"
 	static create(type) {
 		if (inkopod.creatable(type)) {
 			inkopod.#constructable = true;
 			update_food(-inkopod.cost(type));
-			if (type == 0) {type = get_random(1,3);}
+			if (type == "Wild") {
+				let transform_types = ["Cyan", "Magenta", "Yellow"];
+				type = transform_types[get_random(0,2)];
+			}
 			new inkopod(type, Date.now(), "egg");
 		}
 	}
 
 	// restore an inkopod from earlier, such as when loading save file
-	// this one does not require a type of inkopod is creatable
+	// no data checks performed since it should only be used from existing values
+	// this one does not require the unit is "creatable"
 	static restore(type, birthday, state) {
 		inkopod.#constructable = true;
 		new inkopod(type, birthday, state);
@@ -47,85 +55,130 @@ class inkopod {
 
 	static array = []; // contains all inkopods
 
-	// a 2d array with type data
-	// 0=Name, 1=Colour, 2=Strength
-	static types = [
-		["Wild", "gray", 3], // becomes a C, M, or Y on create
-		["Cyan", "#00ffff", 1],
-		["Magenta", "#f500f5", 1],
-		["Yellow", "#f2f200", 1],
-		["Green", "00ff00", 3],
-		["Blue", "#0000f5", 3],
-		["Red", "#f20000", 3],
-		["Teal", "#00f5ab", 6],
-		["Orange", "#f27a00", 6],
-		["Purple", "#7a00f5", 6],
-		["Black", "#0a0a0a", 10],
-		["White", "#f5f5f5", 10]
-	]
+	// a map of type traits. Key is type, value is an array with:
+	// Colour = the RGB hex code colour id
+	// Strength = modifier for costs, production, etc
+	static types = new Map([
+		["Wild", 	["gray",    3] 	],
+		["Cyan", 	["#00ffff", 1] 	],
+		["Magenta", ["#f500f5", 1] 	],
+		["Yellow", 	["#f2f200", 1]  ],
+		["Green", 	["#00ff00", 3]  ],
+		["Blue", 	["#0000f5", 3]  ],
+		["Red", 	["#f20000", 3]  ],
+		["Teal", 	["#00f5ab", 6]  ],
+		["Orange", 	["#f27a00", 6]  ],
+		["Purple", 	["#7a00f5", 6]  ],
+		["Black", 	["#0a0a0a", 10] ],
+		["White", 	["#f5f5f5", 10] ]
+	]);
+
+	// get RGB colour hex code by type
+	static colour(type) {
+		return inkopod.types.get(type)[0];
+	}
+
+	// get strength modifier by type
+	static strength(type) {
+		return inkopod.types.get(type)[1];
+	}
 
 	// total food per minute
 	static get production() {
 		let fpm = 1;
 		for (let ink of inkopod.array) {
 			if (ink.state == "idle") {
-				fpm += inkopod.strength(ink.type);
+				fpm += ink.strength;
 			}
 		}
 		return fpm;
 	}
-
-	// size of inkopod population
-	static get population() {return inkopod.array.length;}
 	
 	// check if type is creatable, return boolean
 	static creatable(type) {
-		// check there is enough food and that the type actually exists
-		if (food >= inkopod.cost(type) && type >= 0 && type < inkopod.types.length) {
-			if (inkopod.name(type) == "Wild") { // can always create wild type
+		
+		// check there is enough food
+		if (food >= inkopod.cost(type)) {
+			// types you already have are always creatable
+			if (inkopod.count_type(type) > 0 && inkopod.count_state("idle") > 0) {
 				return true;
-			} else if (inkopod.count(type, "idle") > 0) { // if you already have at least one of the type
-				return true;
-			} else {
-				return false;
+			}
+			// Wilds and mixes from other types
+			switch (type) {
+				case "Wild": return true; break;
+				case "Blue":
+					if (inkopod.exists("Cyan") && inkopod.exists("Magenta")) {
+						return true;
+					}
+					break;
+				case "Red":
+					if (inkopod.exists("Yellow") && inkopod.exists("Magenta")) {
+						return true;
+					}
+					break;
+				case "Green":
+					if (inkopod.exists("Cyan") && inkopod.exists("Yellow")) {
+						return true;
+					}
+					break;
+				case "Orange":
+					if (inkopod.exists("Red") && inkopod.exists("Yellow")) {
+						return true;
+					}
+					break;
+				case "Teal":
+					if (inkopod.exists("Cyan") && inkopod.exists("Green")) {
+						return true;
+					}
+					break;
+				case "Purple":
+					if (inkopod.exists("Blue") && inkopod.exists("Magenta")) {
+						return true;
+					}
+					break;
+				case "Black":
+					if (inkopod.exists("Cyan") && inkopod.exists("Magenta") && inkopod.exists("Yellow")) {
+						return true;
+					}
+					break;
+				default: break;
 			}
 		}
+		return false;
 	}
 
-	// lookup name by type
-	static name(type) {
-		return inkopod.types[type][0];
+	// boolean whether you have any of a particular type
+	static exists(type) {
+		if (inkopod.count_type(type) > 0) {return true;} else {return false;}
 	}
 
-	// lookup colour code by type
-	static colour(type) {
-		return inkopod.types[type][1];
-	}
+	// size of inkopod population
+	static get population() {return inkopod.array.length;}
 
-	// lookup strength modifier by type
-	static strength(type) {
-		return inkopod.types[type][2];
-	}
-
-	// quantity of a type or state, or both
-	static count(type = null, state = null) {
+	// quantity of units of a type
+	static count_type(type) {
 		let count = 0;
 		for (let ink of inkopod.array) {
-			if (type == null || state == null) {
-				if (ink.type == type || ink.state == state) {count++;}
-			} else {
-				if (ink.type == type && ink.state == state) {count++;}
-			}
+			if (ink.type == type) {count++;}
+		}
+		return count;
+	}
+
+	// quantity of units in a state
+	static count_state(state) {
+		let count = 0;
+		for (let ink of inkopod.array) {
+			if (ink.state == state) {count++;}
 		}
 		return count;
 	}
 
 	// food cost to create a unit of type
 	static cost(type) {
-		if (type == 0) {
-			return ((inkopod.population ** 3) + 1) * 3;
+		if (type == "Wild") {
+			return ((inkopod.population ** 3) + 1) * inkopod.strength(type);
 		} else {
-			return ((inkopod.count(type) ** 3) + 1) * inkopod.strength(type);
+			return ((inkopod.count_type(type) ** 3) + 1) * inkopod.strength(type);
 		}
 	}
 

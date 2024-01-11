@@ -3,6 +3,7 @@
 <head>
 	<title>Inkopod Garden</title>
 	<link rel="stylesheet" type="text/css" href="styles.css"/>
+	<link rel="icon" type="image/x-icon" href="images/favicon192.png">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<script src="classes.js" type="text/javascript" defer></script>
@@ -39,7 +40,7 @@
 			
 			<h2>Save Game</h2>
 			<p>The game is automatically saved to cookies, but I recommended backing up from time to time. Tap "Copy" to copy to your current progress to device clipboard, then paste it somewhere safe.</p>
-			<button type="button" onclick="copy(get_savestring())">
+			<button type="button" onclick="save(); copy(get_savestring());">
 				<i class="fas fa-floppy-disk"></i> Copy
 			</button>
 			<br><br>
